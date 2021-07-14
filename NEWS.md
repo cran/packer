@@ -1,8 +1,29 @@
-## packer 0.0.6.9000
+## packer 0.1.0
+
+- Ensure existing R files are not overwritten is already existing.
+- Added `make_library` to turn the project into a library 
+callable from outside the bundle.
+- Allow `@import` statements for CSS loader
+- Changed improved docs
+- Added `modules` and `import` arguments to CSS loader function.
+- Added `use_loader_style` to easily allow CSS modules. See the
+[documentation](https://packer.john-coene.com/#/guide/style)
+- Add support for yarn via `engine_*` and `yarn_*` functions,
+see [documentation](https://packer.john-coene.com/#/guide/engines).
+- Watch script now default to dev (not prod)
+- Added `use_loader_ts`, `ts_get_types`, and `ts_get_type`
+for TypeScript integration, see [documentation](https://packer.john-coene.com/#/guide/typescript).
+
+## packer 0.0.6
 
 - Use `rstudio` to open files, if available.
 - Added `scaffold_ambiorix` function.
-- Added function to mock up package creation so examples can run for CRAN submission.
+- Added function to mock-up package creation so examples can run for CRAN submission.
+- Added `npm_uninstall` to uninstall NPM packages.
+- Added `npm_update` and `npm_outdated`.
+- Added `add_plugin_prettier`
+- Added `add_plugin_eslint`
+- Deprecated `use_loader_eslint`, as it will apparently be deprecated in favour of the plugin; hence the addition of `add_plugin_eslint`
 
 ## packer 0.0.5
 

@@ -15,12 +15,12 @@ add_plugin_html <- function(use_pug = FALSE, output_path = "../index.html"){
   assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
 
   # install base
-  npm_install("html-webpack-plugin", scope = "dev")
+  engine_install("html-webpack-plugin", scope = "dev")
   ext <- "html"
 
   # if pug install and change ext
   if(use_pug){
-    npm_install("pug", scope = "dev")
+    engine_install("pug", scope = "dev")
     use_loader_pug()
     ext <- "pug"
   }
@@ -68,7 +68,7 @@ add_plugin_clean <- function(dry = FALSE, verbose = FALSE, clean = TRUE,
   assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
 
   # install base
-  npm_install("clean-webpack-plugin", scope = "dev")
+  engine_install("clean-webpack-plugin", scope = "dev")
 
   # options
   options <- list(dry = FALSE, verbose = FALSE, clean = TRUE, protect = TRUE)
@@ -78,7 +78,7 @@ add_plugin_clean <- function(dry = FALSE, verbose = FALSE, clean = TRUE,
   config <- readLines("webpack.common.js")
 
   if(!any(grepl("require('clean-webpack-plugin')", config)))
-    config <- c("const { CleanWebpackPlugin } = require('clean-webpack-plugin');", config)
+    config <- c("const CleanWebpackPlugin = require('clean-webpack-plugin');", config)
 
   plugin <- sprintf("var plugins = [\n  new CleanWebpackPlugin(%s),", options_json)
 
@@ -99,9 +99,6 @@ add_plugin_vue <- function(){
 
   assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
 
-  # install base
-  # npm_install("vue-loader", scope = "dev")
-
   # read config
   config <- readLines("webpack.common.js")
 
@@ -112,4 +109,75 @@ add_plugin_vue <- function(){
 
   writeLines(config, "webpack.common.js")
 
+}
+
+#' Prettier Plugin
+#' 
+#' Add the [prettier-webpack-plugin](https://www.npmjs.com/package/prettier-webpack-plugin) to 
+#' prettify the pre-bundled files.
+#' 
+#' @export
+add_plugin_prettier <- function(){
+
+  assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
+
+  # install base
+  engine_install("prettier", "prettier-webpack-plugin", scope = "dev")
+
+  # read config
+  config <- readLines("webpack.common.js")
+
+  if(!any(grepl("require('prettier-webpack-plugin')", config)))
+    config <- c("const PrettierPlugin = require('prettier-webpack-plugin');", config)
+
+  plugin <- "var plugins = [\n  new PrettierPlugin(),"
+
+  config[grepl("^var plugins = \\[", config)] <- plugin
+
+  writeLines(config, "webpack.common.js")
+
+  cli::cli_alert_success("Added {.val prettier-webpack-plugin} to configuration file")
+}
+
+#' ESLint Plugin
+#' 
+#' Add the [eslint-webpack-plugin](https://www.npmjs.com/package/eslint-webpack-plugin)
+#' run ESLint on files.
+#' 
+#' @export
+add_plugin_eslint <- function(){
+
+  assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
+
+  # install base
+  engine_install("eslint", "eslint-webpack-plugin", scope = "dev")
+
+  # read config
+  config <- readLines("webpack.common.js")
+
+  if(!any(grepl("require('eslint-webpack-plugin')", config)))
+    config <- c("const ESLintPlugin = require('eslint-webpack-plugin');", config)
+
+  plugin <- "var plugins = [\n  new ESLintPlugin(),"
+
+  config[grepl("^var plugins = \\[", config)] <- plugin
+
+  writeLines(config, "webpack.common.js")
+
+  if(!fs::file_exists(".eslintrc")){
+    opts <- list(
+      parserOptions = list(
+        sourceType = "module"
+      ),
+      env = list(
+        es6 = TRUE
+      )
+    )
+    jsonlite::write_json(opts, ".eslintrc", auto_unbox = TRUE, pretty = TRUE)
+    cli::cli_alert_success("Added {.val .eslintrc} to root")
+    usethis::use_build_ignore(".eslintrc")
+    usethis::use_git_ignore(".eslintrc")
+  }
+
+  cli::cli_alert_success("Added {.val eslint-webpack-plugin} to configuration file")
 }

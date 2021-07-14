@@ -4,14 +4,24 @@
 \alias{style_loaders}
 \alias{use_loader_css}
 \alias{use_loader_sass}
+\alias{use_loader_style}
 \title{Use Styles}
 \usage{
-use_loader_css(test = "\\\\.css$")
+use_loader_css(test = "\\\\.css$", import = TRUE, modules = TRUE)
 
 use_loader_sass(test = "\\\\.s[ac]ss$/i")
+
+use_loader_style(test = "\\\\.css$", import = TRUE, modules = TRUE)
 }
 \arguments{
 \item{test}{Test regular expression test which files should be transformed by the loader.}
+
+\item{import}{Whether to enable \code{import} statements for
+\code{.css} files. If \code{FALSE} use \code{require}.}
+
+\item{modules}{Enables CSS modules and their config,
+a complex but powerful feature detailed
+\href{https://webpack.js.org/loaders/css-loader/#modules}{here}}
 }
 \description{
 Installs loaders and adds relevant configuration rules to \code{srcjs/config/loaders.json}.
@@ -22,7 +32,8 @@ This will let you import styles much like any other modules, e.g.: \verb{import 
 \section{Packages}{
 
 \itemize{
-\item \code{\link[=use_loader_css]{use_loader_css()}} - installs and imports \code{style-loader} and \code{css-loader} packages as dev.
+\item \code{\link[=use_loader_css]{use_loader_css()}} - installs and imports \code{css-loader} packages as dev.
+\item \code{\link[=use_loader_style]{use_loader_style()}} - installs and imports \code{style-loader} and \code{css-loader} packages as dev. This loader enabled CSS modules.
 \item \code{\link[=use_loader_sass]{use_loader_sass()}} - installs and imports \code{style-loader}, \code{css-loader}, and \code{sass-loader} as dev.
 }
 }

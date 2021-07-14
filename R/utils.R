@@ -22,6 +22,12 @@ ignore_files <- function(){
   usethis::use_build_ignore("webpack.prod.js")
   usethis::use_build_ignore("webpack.common.js")
   usethis::use_git_ignore("node_modules")
+  
+  if(engine_get() == "yarn"){
+    usethis::use_build_ignore("yarn.lock")
+    usethis::use_build_ignore("yarn-error.log")
+    usethis::use_build_ignore(".yarn/")
+  }
 
   cat("\n")
 }
@@ -29,7 +35,7 @@ ignore_files <- function(){
 # prints error and warnings from system2
 print_results <- function(results){
   if(length(results$warnings))
-    npm_console()
+    engine_console()
 }
 
 # get name of package
@@ -44,7 +50,7 @@ get_pkg_name <- function(){
 webpack_install <- function(){
   scaffolded <- has_scaffold()
   if(scaffolded) return()
-  npm_install("webpack", "webpack-cli", "webpack-merge", scope = "dev")
+  engine_install("webpack", "webpack-cli", "webpack-merge", scope = "dev")
 }
 
 # create directory
@@ -214,6 +220,15 @@ template_r_function <- function(name, template_path){
 
   # save
   output_out <- sprintf("R/%s.R", name)
+  if(file.exists(output_out)){
+    cli::cli_alert_warning(
+      sprintf(
+        "Could not create `%s`, already exists.",
+        output_out
+      )
+    )
+    output_out <- sprintf("R/%s-packer.R", name)
+  }
   writeLines(output, output_out) 
 
   cli::cli_alert_success("Created R file and function")
@@ -247,4 +262,29 @@ template_js_module <- function(name, output_dir = c("exts", "inputs", "outputs")
   writeLines(template, template_out)
 
   cli::cli_alert_success("Created {.val {type}} module")
+}
+
+#' OS Helpers
+#' 
+#' OS helpers for commands that differ based on the system.
+#' 
+#' @noRd 
+#' @keywords internal
+get_os <- function(){
+  unname(Sys.info()["sysname"])
+}
+
+#' @noRd 
+#' @keywords internal
+is_windows <- function(){
+  get_os() == "Windows"
+}
+
+#' @noRd 
+#' @keywords internal
+which_or_where <- function(){
+  if(is_windows())
+    return("where")
+
+  return("which")
 }

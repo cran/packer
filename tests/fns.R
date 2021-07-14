@@ -1,7 +1,15 @@
 create_tmp_package <- function(){
   tmp <- tempdir()
+  # make sure it's empty
+  files <- list.files(tmp)
+  sapply(files, empty, dir = tmp)
   usethis::create_package(tmp)
   return(tmp)
+}
+
+empty <- function(file, dir = tmp){
+  path <- file.path(dir, file)
+  unlink(file, recursive = TRUE, force = TRUE)
 }
 
 delete_tmp_package <- function(tmp){
@@ -10,7 +18,7 @@ delete_tmp_package <- function(tmp){
 
 create_tmp_golem <- function(){
   tmp <- tempdir()
-  golem::create_golem(tmp)
+  golem::create_golem(tmp, open = FALSE)
   return(tmp)
 }
 
