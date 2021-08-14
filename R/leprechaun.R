@@ -1,6 +1,6 @@
-#' Golem
+#' Leprechaun
 #' 
-#' Creates the basic structure for golem app with JavaScript.
+#' Creates the basic structure for leprechaun app with JavaScript.
 #' 
 #' @inheritParams scaffold_widget
 #' @param react Whether to include React, internally runs [apply_react()] 
@@ -11,38 +11,21 @@
 #' this is passed to [apply_react()] or [apply_vue()] if `react` or 
 #' `vue` arguments are set to `TRUE` and ignored otherwise.
 #' 
+#' @importFrom cli cli_alert_info
+#' 
 #' @details Only one of `react` or `vue` can be set to `TRUE`.
 #' 
 #' @return `TRUE` (invisibly) if successfully run.
 #' 
-#' @examples 
-#' if(interactive()){
-#' # current directory
-#' wd <- getwd()
-#' 
-#' # create a mock up ambiorix project
-#' tmp <- tmp_golem()
-#' 
-#' # move to package
-#' setwd(tmp)
-#' 
-#' # scaffold ambiorix
-#' scaffold_golem()
-#' 
-#' # clean up
-#' setwd(wd)
-#' tmp_delete(tmp)
-#' }
-#' 
 #' @export
-scaffold_golem <- function(react = FALSE, vue = FALSE, use_cdn = TRUE, edit = interactive()){
+scaffold_leprechaun <- function(react = FALSE, vue = FALSE, use_cdn = TRUE, edit = interactive()){
   # checks
   assert_that(has_engine())
-  assert_that(is_golem())
-  assert_that(!has_scaffold(), msg = "Only a single golem scaffold is allowed")
+  assert_that(is_leprechaun())
+  assert_that(!has_scaffold(), msg = "Only a single leprechaun scaffold is allowed")
   assert_that(!all(react, vue), msg = "Setup with either react or vue, not both")
 
-  open_msg("golem")
+  open_msg("leprechaun")
 
   # init npm
   engine_init()
@@ -53,15 +36,15 @@ scaffold_golem <- function(react = FALSE, vue = FALSE, use_cdn = TRUE, edit = in
   # edit package.json
   engine_add_scripts()
 
-  # set up dir for golem
+  # set up dir for leprechaun
   # only create dir if vue or react
-  golem_files(react, vue)
+  leprechaun_files(react, vue)
 
   # create config file
   configure(
     name = "index", 
     entry_dir = "", 
-    output_dir = "./inst/app/www", 
+    output_dir = "./inst/assets", 
     externals = list(shiny = "Shiny", jquery = "jQuery")
   )
 
@@ -76,6 +59,7 @@ scaffold_golem <- function(react = FALSE, vue = FALSE, use_cdn = TRUE, edit = in
 
   # wrap up
   end_msg()
+  cli_alert_info("Run {.code leprechaun::use_packer()}")
   
   invisible(TRUE)
 }

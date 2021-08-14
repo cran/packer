@@ -47,7 +47,7 @@ get_pkg_name <- function(){
 }
 
 # install webpack as dev dependency
-webpack_install <- function(){
+core_deps_install <- function(){
   scaffolded <- has_scaffold()
   if(scaffolded) return()
   engine_install("webpack", "webpack-cli", "webpack-merge", scope = "dev")

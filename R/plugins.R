@@ -105,7 +105,7 @@ add_plugin_vue <- function(){
   if(!any(grepl("require('vue-loader/lib/plugin')", config)))
     config <- c("const VueLoaderPlugin = require('vue-loader/lib/plugin');", config)
 
-  config[grepl("^var plugins = \\[", config)] <- "var plugins = [\nnew VueLoaderPlugin()"
+  config[grepl("^var plugins = \\[", config)] <- "var plugins = [\nnew VueLoaderPlugin(),"
 
   writeLines(config, "webpack.common.js")
 
@@ -158,7 +158,7 @@ add_plugin_eslint <- function(){
   if(!any(grepl("require('eslint-webpack-plugin')", config)))
     config <- c("const ESLintPlugin = require('eslint-webpack-plugin');", config)
 
-  plugin <- "var plugins = [\n  new ESLintPlugin(),"
+  plugin <- "var plugins = [\nnew ESLintPlugin(),"
 
   config[grepl("^var plugins = \\[", config)] <- plugin
 
@@ -180,4 +180,114 @@ add_plugin_eslint <- function(){
   }
 
   cli::cli_alert_success("Added {.val eslint-webpack-plugin} to configuration file")
+}
+
+#' Progressive Web Applications
+#' 
+#' Add the `workbox-webpack-plugin` to the config files.
+#' 
+#' @export 
+add_plugin_workbox <- function(){
+
+  assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
+
+  # read config
+  config <- readLines("webpack.common.js")
+
+  if(!any(grepl("require('workbox-webpack-plugin')", config)))
+    config <- c("const WorkboxPlugin = require('workbox-webpack-plugin');", config)
+
+  config[grepl("^var plugins = \\[", config)] <- "var plugins = [\nnew WorkboxPlugin.GenerateSW({clientsClaim: true, skipWaiting: true,}),"
+
+  writeLines(config, "webpack.common.js")
+  engine_install("eslint", "workbox-webpack-plugin", scope = "dev")
+
+  cli::cli_alert_info("Add the following to your JavaScript (e.g.: {.file index.js})")
+  cat(
+    "
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/www/service-worker.js').then(registration => {
+          console.log('SW registered: ', registration);
+        }).catch(registrationError => {
+          console.log('SW registration failed: ', registrationError);
+        });
+      });
+    }\n"
+  )
+}
+
+#' Add Plugin jsdoc
+#' 
+#' Add the [jsdoc](https://github.com/jsdoc/jsdoc) 
+#' plugin to generate documentation from JavaScript code
+#' with tags similar to roxygen2.
+#' 
+#' @param name Name of tutorial
+#' @param edit Whether to open relevent file.
+#' 
+#' @name jsdoc
+#' 
+#' @export 
+add_plugin_jsdoc <- function(edit = interactive()){
+
+  assert_that(fs::file_exists("webpack.common.js"), msg = "Cannot find config file")
+  assert_that(!fs::file_exists("jsdoc.conf.json"), msg = "Cannot find config file")
+
+  # install base
+  engine_install("jsdoc", "jsdoc-webpack-plugin", scope = "dev")
+
+  # read config
+  config <- readLines("webpack.common.js")
+
+  if(!any(grepl("require('jsdoc-webpack-plugin')", config)))
+    config <- c("const JsDocPlugin = require('jsdoc-webpack-plugin');", config)
+
+  plugin <- "var plugins = [\n  new JsDocPlugin({conf: 'jsdoc.conf.json', cwd: '.', preserveTmpFile: false, recursive: true}),"
+
+  config[grepl("^var plugins = \\[", config)] <- plugin
+
+  writeLines(config, "webpack.common.js")
+
+  cli::cli_alert_success("Added {.val jsdoc-webpack-plugin} to configuration file")
+
+  # handle config file
+  config_name <- "jsdoc.conf.json"
+  cli::cli_alert_info("Created {.file {config_name}}")
+  template <- pkg_file("jsdoc/conf.json")
+  fs::file_copy(template, config_name)
+  usethis::use_build_ignore(config_name)
+
+  # output
+  cli::cli_alert_info("Docs will be placed in {.file jsdoc}")
+  usethis::use_build_ignore("jsdoc/")
+
+  # tutorials
+  cli::cli_alert_info("Created {.file tutorials}")
+  fs::dir_create("tutorials")
+  fs::file_create("tutorials/.gitkeep")
+  usethis::use_build_ignore("tutorials/")
+
+  if(edit)
+    fs::file_show(config_name)
+}
+
+#' @rdname jsdoc
+#' @export 
+add_jsdoc_tutorial <- function(name, edit = interactive()){
+  if(missing(name))
+    stop("Missing `name`", call. = FALSE)
+
+  if(!fs::file_exists("jsdoc.conf.json"))
+    cli::cli_alert_warning("Missing ${.file jsdoc.conf.json}, run {.fn add_plugin_jsdoc}")
+
+  fl <- sprintf("tutorials/%s.markdown", name)
+
+  writeLines(
+    sprintf("# %s\n", tools::toTitleCase(name)),
+    con = fl
+  )
+
+  if(edit)
+    fs::file_show(fl)
 }

@@ -1,6 +1,8 @@
-#' Use Styles
+#' Use Styles Loader
 #' 
-#' Installs loaders and adds relevant configuration rules to `srcjs/config/loaders.json`.
+#' Installs loaders and adds relevant configuration rules 
+#' to `srcjs/config/loaders.json`, the function 
+#' `use_loader_style` is _recommended_.
 #' 
 #' @param test Test regular expression test which files should be transformed by the loader.
 #' @param import Whether to enable `import` statements for 
@@ -17,7 +19,7 @@
 #' * [use_loader_style()] - installs and imports `style-loader` and `css-loader` packages as dev. This loader enabled CSS modules.
 #' * [use_loader_sass()] - installs and imports `style-loader`, `css-loader`, and `sass-loader` as dev.
 #' 
-#' @name style_loaders
+#' @name use_loader_style
 #' @export
 use_loader_css <- function(test = "\\.css$", import = TRUE, modules = TRUE){
   assert_that(has_scaffold())
@@ -32,14 +34,14 @@ use_loader_css <- function(test = "\\.css$", import = TRUE, modules = TRUE){
   )
 }
 
-#' @rdname style_loaders
+#' @rdname use_loader_style
 #' @export
 use_loader_sass <- function(test = "\\.s[ac]ss$/i"){
   assert_that(has_scaffold())
   use_loader_rule(c("style-loader", "css-loader", "sass-loader"), test = test)
 }
 
-#' @rdname style_loaders
+#' @rdname use_loader_style
 #' @export
 use_loader_style <- function(test = "\\.css$", import = TRUE, modules = TRUE){
   assert_that(has_scaffold())
@@ -62,7 +64,7 @@ use_loader_style <- function(test = "\\.css$", import = TRUE, modules = TRUE){
 #' 
 #' Adds the loader for the pug templating engine.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @export 
 use_loader_pug <- function(test = "\\.pug$"){
@@ -74,7 +76,7 @@ use_loader_pug <- function(test = "\\.pug$"){
 #' 
 #' Adds the loader for the pug templating engine.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @export 
 use_loader_ts <- function(test = "\\.tsx?$"){
@@ -92,7 +94,7 @@ use_loader_ts <- function(test = "\\.tsx?$"){
 #' 
 #' Adds the loader for babel comiler to the loader configuration file.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' @param use_eslint Whether to also add the ESlint loader.
 #' 
 #' @details The `use_elsint` argument is useful here as loaders have
@@ -114,7 +116,7 @@ use_loader_babel <- function(test = "\\.(js|jsx)$", use_eslint = FALSE){
 #' 
 #' Adds the Vue loader to the loader configuration file.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @details Every time a new version of Vue is released, a corresponding version of `vue-template-compiler` 
 #' is released together. The compiler's version must be in sync with the base Vue package so that `vue-loader`
@@ -135,7 +137,7 @@ use_loader_vue <- function(test = "\\.vue$"){
 #' 
 #' Adds the [`mocha-loader`](https://webpack.js.org/loaders/mocha-loader/) for tests.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @details Excludes `node_modules` by default.
 #' 
@@ -150,7 +152,7 @@ use_loader_mocha <- function(test = "\\.test\\.js$"){
 #' Adds the [`coffee-loader`](https://webpack.js.org/loaders/coffee-loader/) to use
 #' cofeescript.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @details Excludes `node_modules` by default.
 #' 
@@ -165,7 +167,7 @@ use_loader_coffee <- function(test = "\\.coffee$"){
 #' Adds the [`file-loader`](https://webpack.js.org/loaders/file-loader/) 
 #' to resolve files: `png`, `jpg`, `jpeg`, and `gif`.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @export 
 use_loader_file <- function(test = "\\.(png|jpe?g|gif)$/i"){
@@ -173,29 +175,53 @@ use_loader_file <- function(test = "\\.(png|jpe?g|gif)$/i"){
   use_loader_rule("file-loader", test)
 }
 
-#' Use ESlint
+#' Use Svelte Loader
 #' 
-#' Adds the [`eslint-loader`](https://github.com/webpack-contrib/eslint-loader) 
-#' to resolve files: `png`, `jpg`, `jpeg`, and `gif`.
+#' Add the loader svelte
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' 
 #' @export 
-use_loader_eslint <- function(test = "\\.(js|jsx)$"){
+use_loader_svelte <- function(test = "\\.(html|svelte)$"){
   assert_that(has_scaffold())
-  .Deprecated(
-    "add_plugin_eslint",
-    package = "packer",
-    "The loader will soon be deprecated, it is advised to use the plugin instead."
+  use_loader_rule(
+    c("svelte", "svelte-loader"), 
+    test, 
+    use = "svelte-loader"
   )
-  use_loader_rule("eslint-loader", test)
+
+  # add rule
+  json_path <- "srcjs/config/loaders.json"
+  loaders <- jsonlite::read_json(json_path)
+
+  loader <- list(
+    test = "node_modules/svelte/.*\\.mjs$",
+    resolve = list(
+      fullySpecified = FALSE
+    )
+  )
+
+  cli::cli_alert_info("Add the following to {.file webpack.common.js}")
+  cat(
+    "
+    resolve: {
+      alias: {
+        svelte: path.resolve('node_modules', 'svelte')
+      },
+      extensions: ['.mjs', '.js', '.svelte'],
+      mainFields: ['svelte', 'browser', 'module', 'main']
+    }\n"
+  )
+
+  loaders <- append(loaders, list(loader))
+  save_json(loaders, json_path)
 }
 
 #' Add a Loader Ruée
 #' 
 #' Adds a loader rule that is not yet implemened in packer.
 #' 
-#' @inheritParams style_loaders
+#' @inheritParams use_loader_style
 #' @param packages NPM packages (loaders) to install.
 #' @param use Name of the loaders to use for `test`.
 #' @param .name_use Dependending on the webpack config 

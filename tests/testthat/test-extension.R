@@ -14,12 +14,12 @@ test_that("Extension", {
   expect_error(scaffold_extension())
   expect_output(scaffold_extension("ext", edit = FALSE))
   expect_error(scaffold_extension("ext", edit = FALSE))
+  expect_output(scaffold_extension("ext2", edit = FALSE))
   expect_message(bundle())
   expect_message(use_loader_babel(use_eslint = TRUE))
   expect_message(bundle())
 
   # make library 
-  expect_error(make_library())
   expect_message(make_library("lib"))
 
   setwd(wd)

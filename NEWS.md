@@ -1,3 +1,24 @@
+## packer 0.1.1
+
+- Added `put_precommit_hook` to add a pre-commit git hook that 
+ebsure JavaScript files have been minified on commit.
+- Added `engine_adapt` to easily change engine dependending
+on the current project's engine.
+- Added `engine_which` to retrieve which engine the current 
+project is using.
+- Added `put_rprofile_adapt` to add `engine_adapt` to the
+`.Rprofile`.
+- Added `checks` to run basic checks on packer projects.
+- Added `use_loader_svelte`.
+- Added `add_plugin_workbox` for progressive web applications.
+- Added `add_plugin_jsdoc` for generating documentation from
+JavaScript code à la roxygen2, as well as `add_jsdoc_tutorial`
+to add vignettes-like documents.
+- Added `scaffold_leprechaun` to scaffold an application for
+a leprechaun project.
+- Remove `use_loader_eslint`, previously deprecated, see
+`add_plugin_eslint`.
+
 ## packer 0.1.0
 
 - Ensure existing R files are not overwritten is already existing.
