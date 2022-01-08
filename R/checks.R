@@ -1,3 +1,37 @@
+#' Put a Test
+#' 
+#' Puts a testthat test to ensure the files are 
+#' optimised for prod.
+#' 
+#' @note This function adds packer to `Suggests`.
+#' 
+#' @export 
+put_test <- function(){
+  
+	assert_that(has_scaffold())
+	assert_that(is_project())
+	assert_that(is_installed("testthat"))
+
+  pkg <- get_pkg_name()
+
+	template_path <- system.file("hooks/test.R", package = "packer")
+	template_cnt <- readLines(template_path)
+	template <- gsub("#PKG#", pkg, template_cnt)
+
+	test_dir <- "./tests/testthat"
+	if(!dir.exists(test_dir))
+		usethis::use_testthat()
+
+	usethis::use_package("packer", type = "Suggests")
+
+	test_file <- sprintf("%s/test-packer.R", test_dir)
+	writeLines(template, con = test_file)
+
+	cli::cli_alert_success("Create {.file {test_file}}")
+
+	invisible()
+}
+
 #' Put Pre-Commit Hook
 #' 
 #' Add a pre-commit hook that runs at every commit
@@ -12,9 +46,13 @@
 put_precommit_hook <- function(){
 	if(!dir.exists(".git")){
 		cli::cli_alert_danger("Not using git")
-		return()
+		return(invisible())
 	}
-	
+
+	on.exit({
+		cli::cli_alert_success("Added pre-commit hook")
+	})
+
 	file <- pkg_file("hooks/minified.sh")
 	script <- readLines(file)
 	script <- hook_edit_path(script)
@@ -30,12 +68,13 @@ put_precommit_hook <- function(){
 #' @examples 
 #' \dontrun{is_minified("path/to/js-dir")}
 #' 
-#' @export 
+#' @noRd
+#' @keywords internal
 are_minified <- function(dir){
 	files <- list.files(dir, pattern = ".js$")
 
 	if(length(files) == 0)
-		return(invisible())
+		cat(0, file = stdout())
 	
 	full_paths <- file.path(dir, files)
 
@@ -49,6 +88,28 @@ are_minified <- function(dir){
 	}
 
 	cat(0, file = stdout())
+}
+
+#' @noRd
+#' @keywords internal
+are_minified_r <- function(dir){
+	files <- list.files(dir, pattern = ".js$")
+
+	if(length(files) == 0)
+		return(TRUE)
+	
+	full_paths <- file.path(dir, files)
+
+	locs <- sapply(full_paths, loc, quiet = TRUE)
+
+	for(i in 1:length(locs)){
+		if(locs[i] < 10)
+			next
+
+		return(FALSE)
+	}
+
+	return(TRUE)
 }
 
 #' Dynamic Path 
@@ -87,14 +148,17 @@ hook_edit_path <- function(script){
 #' @export 
 put_rprofile_adapt <- function(){
 	rprof <- ".Rprofile"
-	if(!fs::file_exists(rprof)){
+	if(!fs::file_exists(rprof))
 		fs::file_create(rprof)
-	}
+	
+	on.exit({
+		cli::cli_alert_success("Added call to {.file {rprof}}")
+	})
 
-	rprof <- readLines(pkg_file("hooks/rprof.R"))
+	rprof_tmp <- readLines(pkg_file("hooks/rprof.R"))
 
-	content <- readLines(rprof)
-	content <- c(content, rprof)
+	content <- suppressMessages(readLines(rprof))
+	content <- c(content, rprof_tmp)
 
 	writeLines(content, con = rprof)
 }
@@ -130,7 +194,6 @@ checks <- function(){
 	full_paths <- file.path(path, files)
 
 	# lines of code
-	cli::cli_h2("Minification")
 	locs <- check_locs(full_paths)
 
 	# has .Rprofile
@@ -140,6 +203,9 @@ checks <- function(){
 	# has precommit hook
 	cli::cli_h2("Precommit hook")
 	precommit_check <- check_precommit()
+
+	# file size
+	check_file_size(full_paths)
 
 	invisible(
 		list(
@@ -153,10 +219,10 @@ checks <- function(){
 # Check precommit is in place
 check_precommit <- function(){
 	if(!fs::dir_exists(".git"))
-		return()
+		return(invisible())
 	
 	if(!fs::dir_exists(".git/hooks"))
-		return()
+		return(invisible())
 
 	has_check <- FALSE
 	if(fs::file_exists(".git/hooks/pre-commit")){
@@ -192,7 +258,25 @@ check_rprofile <- function(){
 
 # check if files are minified
 check_locs <- function(paths){
+	if(length(paths) == 0)
+		return()
+	
+	cli::cli_h2("Minification")
 	sapply(paths, loc)
+}
+
+check_file_size <- function(paths){
+	if(length(paths) == 0)
+		return()
+	
+	cli::cli_h2("Files size")
+	sapply(paths, size)
+}
+
+size <- function(path){
+	sz <- system2("du", path, stdout = TRUE)
+	k <- strsplit(sz, "\\t")[[1]][1]
+	cli_alert_info("{.file {path}}: {.field {k}} Kb")
 }
 
 loc <- function(path, quiet = FALSE){

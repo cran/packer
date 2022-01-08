@@ -1,3 +1,31 @@
+## packer 0.1.2
+
+- Few typo in documentation. 
+- New `framework7` parameter for `golem_scaffold` to create plug and play Framework7 powered Shiny app. 
+- New `use_loader_framework7` to support [Framework7](https://framework7.io/) projects.
+- Added `ease_lit` to use [Lit](https://lit.dev) in a project.
+- Deprecate `include_tests` (see below)
+- `include_tests_mocha` supercedes `include_tests`
+- Add `include_tests_peeky`.
+- Updating packages prints correct messages.
+- Added `scaffold_bare` to create empty scaffolds with no code.
+- Added option to scaffold golem applications with framework7
+[#13](https://github.com/JohnCoene/packer/pull/13)  + added
+respective loader.
+- Added `engine_check` to check whether npm and/or yarn is 
+currently and can be found: necessary to run anything with 
+packer.
+- Simplify check for packer, no longer requires `dev` directory
+to be present.
+- Added `put_test` to add a testthat check to ensure files are
+minified.
+- Added `include_action_check` to add a Github workflow that 
+checks that the files have been minified on commit.
+- Remove deprecated `include_tests`.
+- Fix use of React [#16](https://github.com/JohnCoene/packer/issues/16)
+- Fix widget externals configuration where wrong names were
+inserted.
+
 ## packer 0.1.1
 
 - Added `put_precommit_hook` to add a pre-commit git hook that 

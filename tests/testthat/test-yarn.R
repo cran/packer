@@ -7,11 +7,6 @@ test_that("Install yarn", {
 })
 
 test_that("Yarn", {
-
-	on.exit({
-		engine_set("npm")
-	})
-
 	# wrong engine
 	engine_set("npm")
 	expect_error(yarn_add("sth"))
@@ -25,11 +20,18 @@ test_that("Yarn", {
   # test bare
   pkg <- create_tmp_golem()
   setwd(pkg)
+	on.exit({
+		set_yarn("")
+		engine_set("npm")
+		setwd(wd)
+		delete_tmp_package(pkg)
+	})
   expect_output(scaffold_golem(edit = FALSE))
 	expect_message(engine_yarn_set())
 	expect_is(engine_which(), "character")
-	expect_message(yarn_version())
+	yarn_version()
 	expect_message(yarn_add("browserify"))
+	yarn_run("production")
 	yarn_install()
 	yarn_upgrade()
 	yarn_remove("browserify")
@@ -40,7 +42,4 @@ test_that("Yarn", {
 	expect_invisible(engine_get())
 	yarn_outdated()
 	yarn_clean()
-	set_yarn("")
-  setwd(wd)
-  delete_tmp_package(pkg)
 })

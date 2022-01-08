@@ -10,6 +10,10 @@ test_that("Golem Bare", {
   # test bare
   pkg <- create_tmp_golem()
   setwd(pkg)
+  on.exit({
+    setwd(wd)
+    delete_tmp_package(pkg)
+  })
   expect_output(scaffold_golem(edit = FALSE))
   expect_error(scaffold_golem(edit = FALSE))
   expect_message(bundle_dev())
@@ -19,8 +23,6 @@ test_that("Golem Bare", {
   expect_message(add_plugin_jsdoc(FALSE))
   add_jsdoc_tutorial("xxx", FALSE)
   expect_message(add_plugin_workbox())
-  setwd(wd)
-  delete_tmp_package(pkg)
 })
 
 test_that("Golem CDN", {
@@ -33,7 +35,7 @@ test_that("Golem CDN", {
   setwd(pkg)
   expect_output(scaffold_golem(react = TRUE, edit = FALSE))
   expect_message(bundle())
-  expect_message(use_loader_mocha())
+  expect_message(use_loader_mocha(FALSE))
   setwd(wd)
   delete_tmp_package(pkg)
 
@@ -56,10 +58,6 @@ test_that("Golem no CDN", {
   pkg <- create_tmp_golem()
   setwd(pkg)
   expect_output(scaffold_golem(react = TRUE, use_cdn = FALSE, edit = FALSE))
-  expect_error(add_test_file())
-  expect_error(add_test_file('sth'))
-  expect_message(include_tests())
-  add_test_file('sth')
   expect_message(bundle())
   expect_message(npm_console())
   expect_message(npm_run("production"))
@@ -73,4 +71,29 @@ test_that("Golem no CDN", {
   expect_message(bundle())
   setwd(wd)
   delete_tmp_package(pkg)
+  
+  # test framework7
+  pkg <- create_tmp_golem()
+  setwd(pkg)
+  expect_output(scaffold_golem(framework7 = TRUE, edit = FALSE))
+  expect_message(bundle())
+  setwd(wd)
+  delete_tmp_package(pkg)
+})
+
+test_that("Golem F7", {
+
+  # keep working directory
+  wd <- getwd()
+
+  # test bare
+  pkg <- create_tmp_golem()
+  setwd(pkg)
+  on.exit({
+    setwd(wd)
+    delete_tmp_package(pkg)
+  })
+  expect_output(scaffold_golem(framework7 = TRUE, edit = FALSE))
+  expect_error(scaffold_golem(edit = FALSE))
+  expect_message(bundle_dev())
 })

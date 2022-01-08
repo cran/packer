@@ -6,7 +6,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JohnCoene/packer?label=latest&style=flat-square)
 [![R-CMD-check](https://github.com/JohnCoene/packer/workflows/R-CMD-check/badge.svg)](https://github.com/JohnCoene/packer/actions)
-[![Codecov test coverage](https://codecov.io/gh/JohnCoene/packer/branch/master/graph/badge.svg)](https://codecov.io/gh/JohnCoene/packer?branch=master)
+[![Codecov test coverage](https://codecov.io/gh/JohnCoene/packer/branch/master/graph/badge.svg)](https://app.codecov.io/gh/JohnCoene/packer?branch=master)
 <!-- badges: end -->
 
 [Website](https://packer.john-coene.com/) | [Installation](https://packer.john-coene.com/#/guide/installation) | [Get Started](https://packer.john-coene.com/#/guide/getting-started) | [Book](https://book.javascript-for-r.com/webpack-intro.html)
@@ -24,6 +24,7 @@ At its core packer consists of functions to scaffold R packages powered by webpa
 - Include React/Vue in you shiny application
 - Bundle JavaScript files for golem
 - Scope CSS selectors
+- Use Lit web components
 - And so much more...
 
 ### Usage

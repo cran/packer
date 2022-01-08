@@ -10,10 +10,15 @@ test_that("Extension", {
   # create package and 
   pkg <- create_tmp_package()
   setwd(pkg)
+  on.exit({
+    setwd(wd)
+    delete_tmp_package(pkg)
+  })
 
   expect_error(scaffold_extension())
   expect_output(scaffold_extension("ext", edit = FALSE))
   expect_error(scaffold_extension("ext", edit = FALSE))
+  file.create("R/ext2.R")
   expect_output(scaffold_extension("ext2", edit = FALSE))
   expect_message(bundle())
   expect_message(use_loader_babel(use_eslint = TRUE))
@@ -21,7 +26,4 @@ test_that("Extension", {
 
   # make library 
   expect_message(make_library("lib"))
-
-  setwd(wd)
-  delete_tmp_package(pkg)
 })

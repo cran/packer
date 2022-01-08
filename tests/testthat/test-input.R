@@ -23,3 +23,17 @@ test_that("Input", {
   setwd(wd)
   delete_tmp_package(pkg)
 })
+
+test_that("Input React", {
+
+  # keep working directory
+  wd <- getwd()
+
+  # test bare
+  pkg <- create_tmp_package()
+  setwd(pkg)
+  expect_output(scaffold_input("incremental", edit = FALSE))
+  expect_message(apply_react())
+  setwd(wd)
+  delete_tmp_package(pkg)
+})

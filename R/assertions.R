@@ -69,14 +69,46 @@ assertthat::on_failure(has_scaffold) <- function(call, env){
 
 # check that it is a golem package
 is_golem <- function(){
-  dev <- fs::dir_exists("dev")
-  config <- fs::file_exists("inst/golem-config.yml")
-
-  all(dev, config)
+  fs::file_exists("inst/golem-config.yml")
 }
 
 assertthat::on_failure(is_golem) <- function(call, env){
   stop("Not a golem app, see `golem::create_golem`", call. = FALSE)
+}
+
+is_project <- function(){
+  path <- tryCatch(
+    rprojroot::find_root(proj_crit()),
+    error = function(e) NULL
+  )
+
+  !is.null(path)
+}
+
+
+assertthat::on_failure(is_project) <- function(call, env){
+  stop("Not a valid R project", call. = FALSE)
+}
+
+#' Check if a package is installed
+#' 
+#' @param pkg Package name.
+#' 
+#' @noRd
+#' @keywords internal
+is_installed <- function(pkg){
+  if(missing(pkg))
+    stop("Missing `pkg`")
+
+  requireNamespace(pkg, quietly = TRUE)
+}
+
+assertthat::on_failure(is_installed) <- function(call, env){
+  msg <- sprintf(
+    "{%s} is not installed",
+    deparse(call$pkg)
+  )
+  stop(msg, call. = FALSE)
 }
 
 # file does not exist
@@ -116,10 +148,6 @@ proj_crit <- function() {
     rprojroot::is_git_root |
     rprojroot::is_remake_project |
     rprojroot::is_projectile_project
-}
-
-is_project <- function(){
-  rprojroot::find_root(proj_crit())
 }
 
 # check that it is an ambiorix app

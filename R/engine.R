@@ -68,11 +68,8 @@ engine_adapt <- function(){
   
   # compare set engine to default
   # return specific message if those differs
-  global_default_engine <- Sys.getenv("PACKER_ENGINE")
-  if(!global_default_engine != "" && engine == global_default_engine){
-    cli::cli_alert_success(
-      "This project uses your default engine: {.strong {engine}}"
-    )
+  global_default_engine <- Sys.getenv("PACKER_ENGINE", "npm")
+  if(engine == global_default_engine){
     return(invisible())
   }
 	
@@ -318,6 +315,42 @@ engine_find <- function(){
   path[1]
 }
 
+#' Engine Check
+#' 
+#' Check if the engine is correctly set up and 
+#' prints helpful messages if not.
+#' 
+#' @export 
+engine_check <- function(){
+  path <- engine_find()
+
+  if(is.na(path) || path == ""){
+    cli::cli_alert_danger("Could not find npm!")
+    cli::cli_text("\n")
+    cli::cli_alert("1 Are you sure you installed it?")
+    cli::cli_ul()
+    cli::cli_li("Manual install: {.url https://nodejs.org/en/download/}")
+    cli::cli_li("Package Managers: {.url https://nodejs.org/en/download/package-manager/}")
+    cli::cli_end()
+    cli::cli_text("\n")
+    cli::cli_alert("2 Are you sure it's in your {.var PATH}?")
+    cli::cli_text(
+      "If you have it installed but still see this: make sure ",
+      "your installation of node and npm is in your {.var PATH}. ",
+      "Otherwise you can manually set the path to your npm binary ",
+      "with {.fn engine_set}, e.g.: {.var engine_set('path/to/npm/bin')}"
+    )
+    return(invisible())
+  }
+
+  v <- engine_version(verbose = FALSE)
+  cli::cli_alert_success(
+    "All good, using {.field {path}} version {.field {v}}"
+  )
+
+  invisible()
+}
+
 #' Engine Run
 #' 
 #' Convenience function to run commands
@@ -386,7 +419,7 @@ engine_add_scripts <- function(){
 #' @noRd 
 engine_update <- function(){
 
-  engine_update_msgs()
+  engine_update_msgs(parent.frame())
 
 	cmd <- engine_update_cmd()
   results <- engine_run(cmd)
@@ -396,13 +429,14 @@ engine_update <- function(){
   invisible(results)
 }
 
-engine_update_msgs <- function(){
+engine_update_msgs <- function(env = parent.frame()){
   
   if(engine_get() == "npm"){
     cli::cli_process_start(
       "Updating",
       "Updated",
-      "Failed to update"
+      "Failed to update",
+      .envir = env
     )
     return()
   }
@@ -410,7 +444,8 @@ engine_update_msgs <- function(){
   cli::cli_process_start(
     "Upgrading",
     "Upgraded",
-    "Failed to upgrade"
+    "Failed to upgrade",
+    .envir = env
   )
 }
 
@@ -443,13 +478,18 @@ engine_outdated <- function(){
 #' 
 #' Get the version of the currently set engine.
 #' 
-#' @return The semver as a string.
+#' @param verbose Whether to print the version.
+#' 
+#' @return The semver as a string (invisibly).
 #' 
 #' @keywords internal
 #' @noRd
-engine_version <- function(){
+engine_version <- function(verbose = interactive()){
   output <- engine_run("--version")
   version <- output$result
-  cli::cli_alert(version) 
+
+  if(verbose)
+    cli::cli_alert(version)
+
   invisible(version)
 }

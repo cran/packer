@@ -21,4 +21,16 @@ test_that("Checks", {
 
   expect_message(checks())
 	expect_error(are_minified())
+  expect_message(bundle_dev())
+	are_minified("inst/packer")
+  expect_message(put_precommit_hook())
+
+  # git
+  usethis::use_git()
+  expect_message(put_precommit_hook())
+  expect_message(put_precommit_hook())
+
+  # rprofile
+  file.create(".Rprofile")
+  put_rprofile_adapt()
 })
