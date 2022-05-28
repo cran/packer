@@ -36,10 +36,13 @@ create_tmp_project <- function(){
 
 create_tmp_ambiorix <- function(){
   tmp <- tempdir()
-  suppressMessages(usethis::create_project(tmp))
-  dir.create(sprintf("%s/templates", tmp))
-  dir.create(sprintf("%s/assets", tmp))
-  file.create(sprintf("%s/app.R", tmp))
+  # make sure it's empty
+  files <- list.files(tmp)
+  sapply(files, empty, dir = tmp)
+  suppressMessages(usethis::create_package(tmp))
+  writeLines(
+    "build()$start()",
+    file.path(tmp, "app.R")
+  )
   return(tmp)
 }
-
